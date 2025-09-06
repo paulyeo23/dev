@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<!-- cse6242 -->
+
+<!-- run: http-server & -->
+
+<head>
+  <style>
+    /* Define css rules here */
+  </style>
+  <title></title>
+</head>
+
+<body>
+  <div id="my_dataviz"></div>
+  <script src="lib/d3/d3.min.js"></script>
+  <script src="lib/d3-dsv/d3-dsv.min.js"></script>
+  <script src="lib/d3-fetch/d3-fetch.min.js"></script>
+
+  <script>
+    // define the dimensions and margins for the graph
+    const margin = { top: 40, right: 30, bottom: 40, left: 90 };
+    const width = 920 - margin.left - margin.right;
+    const height = 800 - margin.top - margin.bottom;
+    let maxCount = 0;
+
+    // create scales x & y for X and Y axis and set their ranges
+    var x = d3.scaleLinear();
+    var y = d3.scaleBand();
+
+    // append svg element to the body of the page
+    var svg = d3
+      .select("body")
+      .append("svg")
+      // set the id, dimensions and position of the svg element
+      .append("g")
+      .attr("id", "container");
+
+    // Get the data and filter for top 5 most trafficked species
+    var pathToCsv = "q3.csv"; // path to csv
+
+    d3.dsv(",", pathToCsv, function (d) {
+      d.count = Number(d.count);
+      if (d.count > maxCount) {
+        maxCount = d.count;
+      }
+      return d;
+    })
+      .then(function (data) {
+        console.log(data);
+        const top5Count = data
+          .slice()
+          .sort((a, b) => b.count - a.count)
+          .slice(0, 5);
+        /* Create bar plot using data from csv */
+        svg = d3
+          .select("#my_dataviz")
+          .append("svg")
+          .attr("width", width + margin.left + margin.right + 50)
+          .attr("height", height + margin.top + margin.bottom + 50)
+          .append("g")
+          .attr(
+            "transform",
+            "translate(" + margin.left + "," + margin.top + ")"
+          );
+
+        x = d3.scaleLinear().domain([0, maxCount]).range([0, width]);
+
+        svg
+          .append("g")
+          .attr("transform", "translate(0," + height + ")")
+          .call(d3.axisBottom(x))
+          .selectAll("text")
+          .style("text-anchor", "end");
+
+        y = d3
+          .scaleBand()
+          .range([0, height])
+          .domain(
+            top5Count.map(function (d) {
+              return d.species;
+            })
+          )
+          .padding(0.1);
+        svg.append("g").call(d3.axisLeft(y));
+
+        function generateRandomHexColor() {
+          const maxVal = 0xffffff;
+          let randomNumber = Math.floor(Math.random() * maxVal);
+          let hexColor = randomNumber.toString(16);
+          hexColor = hexColor.padStart(6, "0");
+          return `#${hexColor.toUpperCase()}`;
+        }
+
+        top5Count.forEach((entry) => {
+          svg
+            .selectAll("myRect")
+            .data([entry])
+            .enter()
+            .append("rect")
+            .attr("x", x(0))
+            .attr("y", function (d) {
+              return y(d.species);
+            })
+            .attr("width", function (d) {
+              return x(d.count);
+            })
+            .attr("height", y.bandwidth())
+            .attr("fill", generateRandomHexColor());
+        });
+
+        svg
+          .append("text")
+          .attr("x", width / 2)
+          .attr("y", -margin.top / 2)
+          .attr("text-anchor", "middle")
+          .style("font-size", "24px")
+          .style("font-weight", "bold")
+          .text("Wildlife Traffiicking Incidents per Species (2015 to 2023)")
+          .attr("id", "title");
+
+        svg
+          .append("text")
+          .attr("class", "x axis-label")
+          .attr("text-anchor", "middle")
+          .attr("x", width / 2)
+          .attr("y", height + margin.bottom + 10) // Adjust for margin and spacing
+          .text("X-Axis Label")
+          .attr("id", "x_axis_label");
+
+        svg
+          .append("text")
+          .attr("class", "y axis-label")
+          .attr("text-anchor", "middle")
+          .attr("transform", "rotate(-90)")
+          .attr("x", -height / 2)
+          .attr("y", -margin.left)
+          .text("Y-Axis Label")
+          .attr("id", "“y_axis_label”");
+
+        // set the domains of X and Y scales based on data
+        x.domain();
+        y.domain();
+
+        // Add bars to svg - create new elements based on your data
+        svg.selectAll();
+
+        // Add the X Axis
+        svg.append();
+
+        // Add the text label for X Axis
+        svg.append();
+
+        // Add the Y Axis
+        svg.append();
+
+        // Add the text label for Y axis
+        svg.append();
+
+        // Add GT username
+        svg.append();
+
+        // Add Title
+        svg.append();
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
+  </script>
+</body>
